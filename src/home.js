@@ -9,8 +9,8 @@ require('codemirror/mode/htmlmixed/htmlmixed')
 require('codemirror/keymap/sublime')
 var CodeMirror = require('codemirror')
 
-var ssb        = muxrpc(require('./lib/ssb-manifest'), false, function (stream) { return Serializer(stream, JSON, {split: '\n\n'}) })()
-var localhost  = require('ssb-channel').connect(ssb, 'localhost:9001')
+var ssb        = muxrpc(require('ssb-manifest'), false, function (stream) { return Serializer(stream, JSON, {split: '\n\n'}) })()
+var localhost  = require('ssb-channel').connect(ssb, 'localhost')
 var app        = require('./app')(ssb)
 
 var editor = CodeMirror(document.getElementById('editor'), {
@@ -25,7 +25,7 @@ var editor = CodeMirror(document.getElementById('editor'), {
 
 localhost.on('connect', function() {
   // authenticate the connection
-  auth.getToken('localhost:9001', function(err, token) {
+  auth.getToken('localhost', function(err, token) {
     if (err) return localhost.close(), console.error('Token fetch failed', err)
     ssb.auth(token, function(err) {
       // app.setStatus(false)
