@@ -10,6 +10,17 @@
     "type": "git",
     "url": "git://github.com/pfraze/textedit.pub.git"
   },
+  "dependencies": {
+    "browserify": "~6.2.0",
+    "less": "~1.7.5",
+    "osenv": "~0.1.0",
+    "non-private-ip": "~1.1.0",
+    "rc": "~0.5.4",
+    "scuttlebot": "~2.2.0",
+    "stack": "~0.1.0",
+    "stack-assets-builder": "~1.0.0",
+    "stack-assets-static": "~1.0.0"
+  },
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "license": "MIT",
   "bugs": {
