@@ -6,6 +6,7 @@ server.on('request', stack(
     res.setHeader('Content-Security-Policy', 'default-src \'self\' data:; connect-src \'self\' ws://localhost:'+server.config.port)
     next()
   },
+  require('./domain-auth')(server),
   require('stack-assets-builder')({ enabled: server.config.dev, root: __dirname }),
   require('stack-assets-static')({ root: __dirname })
 ))
