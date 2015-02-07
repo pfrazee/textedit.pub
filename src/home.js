@@ -4,9 +4,12 @@ var Serializer = require('pull-serializer')
 var auth       = require('ssb-domain-auth')
 
 require('codemirror/mode/javascript/javascript')
+require('codemirror/mode/markdown/markdown')
+require('codemirror/mode/javascript/javascript')
 require('codemirror/mode/css/css')
 require('codemirror/mode/htmlmixed/htmlmixed')
 require('codemirror/keymap/sublime')
+require('codemirror/addon/dialog/dialog')
 var CodeMirror = require('codemirror')
 
 var ssb        = muxrpc(require('ssb-manifest'), false, function (stream) { return Serializer(stream, JSON, {split: '\n\n'}) })()
@@ -15,13 +18,15 @@ var app        = require('./app')(ssb)
 
 var editor = CodeMirror(document.getElementById('editor'), {
   lineNumbers: true,
-  mode: 'javascript',
+  mode: null,
   keyMap: 'sublime',
-  autoCloseBrackets: true,
-  matchBrackets: true,
+  // autoCloseBrackets: true,
+  // matchBrackets: true,
+  lineWrapping: true,
   showCursorWhenSelecting: true,
   theme: 'codemirror'
 })
+window.editor = editor
 
 localhost.on('connect', function() {
   // authenticate the connection

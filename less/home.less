@@ -6,20 +6,29 @@ html, body, #page, #editor {
 
 @import (inline) "./../node_modules/codemirror/lib/codemirror.css";
 @import (inline) "./../node_modules/codemirror/theme/monokai.css";
+@import (inline) "./../node_modules/codemirror/addon/dialog/dialog.css";
 .CodeMirror {
   height: 100%;
 }
 
+.page-column() {
+  background: #F7F7F7;
+  color: #555;
+  font-family:  Helvetica, Arial, sans-serif; //Verdana, Geneva, sans-serif;
+  height: 100%;
+
+  a {
+    color: #444;
+  }
+}
+
 #page {
   width: 100%;
-  border-collapse: collapse;
 
   #files {
+    .page-column();
+    float: left;
     width: 200px;
-    background: #F7F7F7;
-    color: #555;
-    font-family:  Helvetica, Arial, sans-serif; //Verdana, Geneva, sans-serif;
-    vertical-align: top;
 
     ul {
       padding: 0;
@@ -28,15 +37,8 @@ html, body, #page, #editor {
 
       li {
         padding: 1em;
-
-        a {
-          color: #444;
-          text-decoration: none;
-        }
-
         &.selected {
           background: #E4E1E1;
-
           a {
             font-weight: bold;
           }
@@ -46,5 +48,15 @@ html, body, #page, #editor {
   }
 
   #editor {
+    margin-left: 200px
+  }
+
+  #tools {
+    .page-column();
+    float: right;
+    width: 40px;
+
+    padding: 0 1em;
+    border-left: 1px solid #ddd;
   }
 }
