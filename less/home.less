@@ -1,10 +1,39 @@
-html, body, #page-container, #editor {
+html, body, #page, #editor {
   height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 @import (inline) "./../node_modules/codemirror/lib/codemirror.css";
 @import (inline) "./../node_modules/codemirror/theme/monokai.css";
 .CodeMirror {
   height: 100%;
+}
+
+#page {
+  width: 100%;
+  border-collapse: collapse;
+
+  #files {
+    width: 200px;
+    padding: 0 1em;
+    background: #ccc;
+    box-shadow: inset -4px 0px 6px rgba(0, 0, 0, 0.25);
+    color: #555;
+    font-family:  Helvetica, Arial, sans-serif; //Verdana, Geneva, sans-serif;
+    vertical-align: top;
+
+    ul {
+      padding: 0;
+      list-style: none;
+
+      li {
+        margin-bottom: 1em;
+      }
+    }
+  }
+
+  #editor {
+
+  }
 }

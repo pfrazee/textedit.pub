@@ -15,12 +15,12 @@ var app        = require('./app')(ssb)
 
 var editor = CodeMirror(document.getElementById('editor'), {
   lineNumbers: true,
-  mode: "javascript",
-  keyMap: "sublime",
+  mode: 'javascript',
+  keyMap: 'sublime',
   autoCloseBrackets: true,
   matchBrackets: true,
   showCursorWhenSelecting: true,
-  theme: "monokai"
+  theme: 'codemirror'
 })
 
 localhost.on('connect', function() {
