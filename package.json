@@ -18,6 +18,7 @@
     "multiblob": "~1.4.1",
     "multicb": "~1.1.0",
     "muxrpc": "~3.3.0",
+    "mview": "~0.1.0",
     "osenv": "~0.1.0",
     "phoenix-router": "~1.0.0",
     "pull-merge": "~1.0.2",
