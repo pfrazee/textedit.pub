@@ -19,6 +19,7 @@ module.exports = function (ssb) {
   var gui = {}
   var bufferId = null
   var bufferState = null
+  var bufferDisabledCommits = null
   var ssbConnected = false
 
   // buffer control
@@ -38,8 +39,9 @@ module.exports = function (ssb) {
 
     bufferId = id
     bufferState = mview.text()
+    bufferDisabledCommits = {}
     if (id)
-      readBuffer(bufferId, bufferState, next)
+      readBuffer(bufferId, bufferState, { redraw: true }, next)
     else {
       document.getElementById('history').firstChild.innerHTML = '<em class="new-buffer">new buffer</em>'
       next()
@@ -107,12 +109,7 @@ module.exports = function (ssb) {
           alert('Failed to publish diff, see console for error details')
           return
         }
-        if (!bufferId)
-          gui.open(id)
-        else {
-          var histEntries = document.getElementById('history').firstChild
-          histEntries.insertBefore(com.histUpdate(update), histEntries.firstChild)
-        }
+        gui.open(id)
         document.querySelector('button#save').classList.remove('changed')
       })
     }
@@ -122,6 +119,25 @@ module.exports = function (ssb) {
 
   gui.toggleHistory = function () {
     document.getElementById('history').classList.toggle('visible')
+  }
+
+  gui.toggleCommit = function (e) {
+    var key = e.target.value
+    console.log('toggle', key)
+    bufferDisabledCommits[key] = !e.target.checked
+
+    // rebuild
+    var oldState = bufferState
+    bufferState = mview.text()
+    readBuffer(bufferId, bufferState, function (err) {
+      if (err) {
+        alert('Failed to reconstruct the text buffer, check the console for error details.')
+        console.error('Failed to read buffer state', err)
+        bufferState = oldState
+        return
+      }
+      editor.setValue(bufferState.toString())
+    })
   }
 
   // ssb sync
@@ -153,18 +169,24 @@ module.exports = function (ssb) {
     }
   }
 
-  function readBuffer (id, state, cb) {
+  function readBuffer (id, state, opts, cb) {
     console.log('constructing', id)
-    var histEntries = document.getElementById('history').firstChild
-    histEntries.innerHTML = ''
+    if (!cb) {
+      cb = opts
+      opts = {}
+    }
+    if (opts.redraw)
+      clearHistoryPane()
 
     pull(ssb.messagesLinkedToMessage({ id: id, rel: 'update', keys: true }), pull.collect(function (err, updates) {
       if (err || !updates || !updates.length) return cb(err)
       updates.sort(updateSort)
       updates.forEach(function (update) {
         try {
-          state.update(update.value.content.diff)
-          histEntries.insertBefore(com.histUpdate(update), histEntries.firstChild)
+          if (!bufferDisabledCommits[update.key])
+            state.update(update.value.content.diff)
+          if (opts.redraw)
+            addToHistoryPane(update)
         } catch (e) {
           console.error('Failed to apply update', update, e)
         }
@@ -196,6 +218,14 @@ module.exports = function (ssb) {
     }
   })
   window.editor = editor
+
+  var histEntries = document.getElementById('history').firstChild
+  function clearHistoryPane() {
+    histEntries.innerHTML = ''
+  }
+  function addToHistoryPane(update) {
+    histEntries.insertBefore(com.histUpdate(update, { ontoggle: gui.toggleCommit.bind(gui) }), histEntries.firstChild)
+  }
 
   // final setup
 

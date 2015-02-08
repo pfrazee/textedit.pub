@@ -13,7 +13,7 @@ module.exports = function (update, opts) {
 
   return h('p',
     h('label',
-      h('input', { type: 'checkbox', checked: true, onclick: u.handler(opts.ontoggle, true) }),
+      h('input', { type: 'checkbox', checked: true, onclick: u.handler(opts.ontoggle, true), value: update.key }),
       h('strong', desc || h('em', 'no commit message')),
       h('br'),
       h('small',
