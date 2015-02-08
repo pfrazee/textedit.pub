@@ -2,7 +2,7 @@ var h = require('hyperscript')
 
 module.exports = function (opts) {
   opts = opts || {}
-  return h('p', h('button#save', { onclick: handler(opts.onsave) }, 'Save'))
+  return h('p', h('button#save', { onclick: handler(opts.onsave) }, 'Commit'))
 }
 
 function handler (cb) {

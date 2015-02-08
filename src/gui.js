@@ -64,17 +64,25 @@ module.exports = function (ssb) {
     if (editorStr === bufferState.toString() || !editorStr)
       return console.log('No changes need saving')
 
+    var name, commitMsg
     if (!bufferId) {
       // new buffer
       var name = prompt('Name of this text buffer')
       if (!(''+name).trim())
         return
+    }
+    commitMsg = prompt('Commit message')
+    if (commitMsg === null)
+      return
+
+    if (!bufferId) {
       ssb.add({
         type: 'create-text-buffer',
         name: name
       }, next)
     } else
       next()
+
     function next (err, msg) {
       if (err) {
         console.error(err)
@@ -87,6 +95,7 @@ module.exports = function (ssb) {
       bufferState.update(diff)
       ssb.add({
         type: 'update-text-buffer',
+        desc: commitMsg,
         rel: 'update',
         msg: id,
         diff: diff
@@ -98,6 +107,7 @@ module.exports = function (ssb) {
         }
         if (!bufferId)
           gui.open(id)
+        document.querySelector('button#save').classList.remove('changed')
       })
     }
   }
