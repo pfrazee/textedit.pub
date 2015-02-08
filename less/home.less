@@ -4,6 +4,11 @@ html, body, #page, #main {
   padding: 0;
 }
 
+body {
+  color: #555;
+  font-family:  Helvetica, Arial, sans-serif;
+}
+
 @import (inline) "./../node_modules/codemirror/lib/codemirror.css";
 @import (inline) "./../node_modules/codemirror/theme/monokai.css";
 @import (inline) "./../node_modules/codemirror/addon/dialog/dialog.css";
@@ -18,8 +23,6 @@ hr {
 
 .page-column() {
   background: #F7F7F7;
-  color: #555;
-  font-family:  Helvetica, Arial, sans-serif; //Verdana, Geneva, sans-serif;
   height: 100%;
 
   a {
@@ -64,6 +67,32 @@ hr {
 
     padding: 0 1em;
     border-left: 1px solid #ddd;
+  }
+
+  #history {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 90px;
+    z-index: 1000;
+    background: #fff;
+    padding: 0 1em;
+    border: 1px solid #bbb;
+    box-shadow: 0px 2px 3px rgba(0,0,0,0.15);
+
+    &.visible {
+      display: block;
+    }
+
+    small {
+      color: #777;
+    }
+    .adds {
+      color: green;
+    }
+    .dels {
+      color: red;
+    }
   }
 }
 

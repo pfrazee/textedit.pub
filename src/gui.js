@@ -40,8 +40,10 @@ module.exports = function (ssb) {
     bufferState = mview.text()
     if (id)
       readBuffer(bufferId, bufferState, next)
-    else
+    else {
+      document.getElementById('history').innerHTML = '<p><em>new buffer</em></p>'
       next()
+    }
 
     function next (err) {
       if (err)
@@ -99,7 +101,7 @@ module.exports = function (ssb) {
         rel: 'update',
         msg: id,
         diff: diff
-      }, function (err) {
+      }, function (err, update) {
         if (err) {
           console.error(err)
           alert('Failed to publish diff, see console for error details')
@@ -107,9 +109,19 @@ module.exports = function (ssb) {
         }
         if (!bufferId)
           gui.open(id)
+        else {
+          var histDiv = document.getElementById('history')
+          histDiv.insertBefore(com.histUpdate(update), histDiv.firstChild)
+        }
         document.querySelector('button#save').classList.remove('changed')
       })
     }
+  }
+
+  // gui controls
+
+  gui.toggleHistory = function () {
+    document.getElementById('history').classList.toggle('visible')
   }
 
   // ssb sync
@@ -143,12 +155,16 @@ module.exports = function (ssb) {
 
   function readBuffer (id, state, cb) {
     console.log('constructing', id)
+    var histDiv = document.getElementById('history')
+    histDiv.innerHTML = ''
+
     pull(ssb.messagesLinkedToMessage({ id: id, rel: 'update', keys: true }), pull.collect(function (err, updates) {
       if (err || !updates || !updates.length) return cb(err)
       updates.sort(updateSort)
       updates.forEach(function (update) {
         try {
           state.update(update.value.content.diff)
+          histDiv.insertBefore(com.histUpdate(update), histDiv.firstChild)
         } catch (e) {
           console.error('Failed to apply update', update, e)
         }
@@ -159,7 +175,7 @@ module.exports = function (ssb) {
 
   // layout
 
-  document.getElementById('right').appendChild(com.tools({ onsave: gui.save.bind(gui) }))
+  document.getElementById('right').appendChild(com.tools({ onsave: gui.save.bind(gui), onhist: gui.toggleHistory.bind(gui) }))
   document.getElementById('left').appendChild(com.files({ onnew: gui.open.bind(gui, null) }))
   document.getElementById('left').appendChild(h('ul#buffers'))
   var editor = CodeMirror(document.getElementById('main'), {
