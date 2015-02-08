@@ -41,7 +41,7 @@ module.exports = function (ssb) {
     if (id)
       readBuffer(bufferId, bufferState, next)
     else {
-      document.getElementById('history').innerHTML = '<p><em>new buffer</em></p>'
+      document.getElementById('history').firstChild.innerHTML = '<em class="new-buffer">new buffer</em>'
       next()
     }
 
@@ -110,8 +110,8 @@ module.exports = function (ssb) {
         if (!bufferId)
           gui.open(id)
         else {
-          var histDiv = document.getElementById('history')
-          histDiv.insertBefore(com.histUpdate(update), histDiv.firstChild)
+          var histEntries = document.getElementById('history').firstChild
+          histEntries.insertBefore(com.histUpdate(update), histEntries.firstChild)
         }
         document.querySelector('button#save').classList.remove('changed')
       })
@@ -155,8 +155,8 @@ module.exports = function (ssb) {
 
   function readBuffer (id, state, cb) {
     console.log('constructing', id)
-    var histDiv = document.getElementById('history')
-    histDiv.innerHTML = ''
+    var histEntries = document.getElementById('history').firstChild
+    histEntries.innerHTML = ''
 
     pull(ssb.messagesLinkedToMessage({ id: id, rel: 'update', keys: true }), pull.collect(function (err, updates) {
       if (err || !updates || !updates.length) return cb(err)
@@ -164,7 +164,7 @@ module.exports = function (ssb) {
       updates.forEach(function (update) {
         try {
           state.update(update.value.content.diff)
-          histDiv.insertBefore(com.histUpdate(update), histDiv.firstChild)
+          histEntries.insertBefore(com.histUpdate(update), histEntries.firstChild)
         } catch (e) {
           console.error('Failed to apply update', update, e)
         }

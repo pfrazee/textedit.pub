@@ -74,9 +74,10 @@ hr {
     position: absolute;
     top: 12px;
     right: 90px;
+    min-height: 120px;
     z-index: 1000;
     background: #fff;
-    padding: 0 1em;
+    padding: 0 1em 0 2em;
     border: 1px solid #bbb;
     box-shadow: 0px 2px 3px rgba(0,0,0,0.15);
 
@@ -84,16 +85,63 @@ hr {
       display: block;
     }
 
-    small {
-      color: #777;
+    p {
+      position: relative;
+    
+      input[type=checkbox] {
+        position: absolute;
+        top: -1px;
+        left: -24px;
+      }
+
+      small {
+        color: #777;
+      }
+      .adds {
+        color: green;
+      }
+      .dels {
+        color: red;
+      }
     }
-    .adds {
-      color: green;
-    }
-    .dels {
-      color: red;
+    .new-buffer {
+      position: relative;
+      top: 14px;
+      left: -10px;
     }
   }
+}
+
+// http://cssarrowplease.com/
+.arrow_box_right {
+  position: absolute;
+  top: 96px;
+  right: -1px;
+  background: #fff;
+  border: 1px solid #fff;
+}
+.arrow_box_right:after, .arrow_box_right:before {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.arrow_box_right:after {
+  border-color: rgba(136, 183, 213, 0);
+  border-left-color: #fff;
+  border-width: 10px;
+  margin-top: -10px;
+}
+.arrow_box_right:before {
+  border-color: rgba(194, 225, 245, 0);
+  border-left-color: #bbb;
+  border-width: 11px;
+  margin-top: -11px;
 }
 
 #save.changed {
