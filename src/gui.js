@@ -1,6 +1,7 @@
 var mview = require('mview')
 var pull = require('pull-stream')
 var h = require('hyperscript')
+var u = require('./util')
 var com = require('./com')
 
 require('codemirror/mode/javascript/javascript')
@@ -43,7 +44,7 @@ module.exports = function (ssb) {
     if (id)
       readBuffer(bufferId, bufferState, { redraw: true }, next)
     else {
-      document.getElementById('history').firstChild.innerHTML = '<em class="new-buffer">new buffer</em>'
+      document.getElementById('history').firstChild.innerHTML = '<em class="new-buffer">new file</em>'
       next()
     }
 
@@ -96,21 +97,30 @@ module.exports = function (ssb) {
       // publish diff
       var id = (msg) ? msg.key : bufferId
       var diff = bufferState.diff(editorStr)
-      bufferState.update(diff)
-      ssb.add({
-        type: 'update-text-buffer',
-        desc: commitMsg,
-        rel: 'update',
-        msg: id,
-        diff: diff
-      }, function (err, update) {
+      u.publishTextBlob(ssb, JSON.stringify(diff), function (err, link) {
         if (err) {
           console.error(err)
           alert('Failed to publish diff, see console for error details')
           return
         }
-        gui.open(id)
-        document.querySelector('button#save').classList.remove('changed')
+        link.rel = 'diff'
+        link.type = 'application/json'
+        ssb.add({
+          type: 'update-text-buffer',
+          desc: commitMsg,
+          rel: 'update',
+          msg: id,
+          diff: link
+        }, function (err, update) {
+          if (err) {
+            console.error(err)
+            alert('Failed to publish diff, see console for error details')
+            return
+          }
+          bufferState.update(diff)        
+          gui.open(id)
+          document.querySelector('button#save').classList.remove('changed')
+        })
       })
     }
   }
@@ -181,17 +191,52 @@ module.exports = function (ssb) {
     pull(ssb.messagesLinkedToMessage({ id: id, rel: 'update', keys: true }), pull.collect(function (err, updates) {
       if (err || !updates || !updates.length) return cb(err)
       updates.sort(updateSort)
-      updates.forEach(function (update) {
-        try {
-          if (!bufferDisabledCommits[update.key])
-            state.update(update.value.content.diff)
-          if (opts.redraw)
-            addToHistoryPane(update)
-        } catch (e) {
-          console.error('Failed to apply update', update, e)
+      applyNextDiff()
+
+      function applyNextDiff () {
+        if (updates.length === 0)
+          return cb()
+        
+        var update = updates.shift()
+        var diff = update.value.content.diff
+        
+        if (bufferDisabledCommits[update.key])
+          return applyNextDiff()
+
+        if (diff.ext && diff.rel === 'diff')
+          getBlob()
+        else
+          apply()
+
+        function getBlob () {
+          u.getBlob(ssb, diff.ext, function (err, blob) {
+            if (err) {
+              console.error('Failed to fetch update', update, err)
+              return applyNextDiff()
+            }
+            
+            try { diff = JSON.parse(blob) }
+            catch (e) {
+              console.error('Failed to parse update blob', update, e, diff)
+              return applyNextDiff()
+            }
+            console.log(diff)
+
+            apply()
+          })
         }
-      })
-      cb()
+
+        function apply () {
+          try {
+            state.update(diff)
+            if (opts.redraw)
+              addToHistoryPane(update)
+          } catch (e) {
+            console.error('Failed to apply update', update, e)
+          }
+          applyNextDiff()
+        }
+      }
     }))
   }
 
