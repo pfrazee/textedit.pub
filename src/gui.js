@@ -33,6 +33,7 @@ module.exports = function (ssb) {
   }
 
   gui.open = function (id) {
+    console.log('gui.open', id)
     if (gui.hasChanged()) {
       if (!confirm('There are unsaved changes to this buffer. Are you sure you want to navigate away?'))
         return
@@ -58,6 +59,7 @@ module.exports = function (ssb) {
         document.querySelector('#left [data-id="'+id+'"]').classList.add('selected')
       else
         document.querySelector('#left li').classList.add('selected')
+      window.location.hash = '#/file/'+id
     }
   }
 
@@ -159,6 +161,7 @@ module.exports = function (ssb) {
     pull(ssb.messagesByType({ type: 'create-text-buffer', live: true }), pull.drain(onNewTextBuffer, function () {
       ssbConnected = false
     }))
+    gui.open(bufferId || window.location.hash.slice('#/file/'.length) || null)
   }
 
   function onNewTextBuffer (msg) {
@@ -264,6 +267,15 @@ module.exports = function (ssb) {
   })
   window.editor = editor
 
+  window.onhashchange = openFileInUrl
+  function openFileInUrl() {
+    var id = window.location.hash.slice('#/file/'.length)
+    if (id == 'null')
+      id = null
+    if (bufferId != id)
+      gui.open(id)
+  }
+
   var histEntries = document.getElementById('history').firstChild
   function clearHistoryPane() {
     histEntries.innerHTML = ''
@@ -271,10 +283,6 @@ module.exports = function (ssb) {
   function addToHistoryPane(update, diff) {
     histEntries.insertBefore(com.histUpdate(update, diff, { ontoggle: gui.toggleCommit.bind(gui) }), histEntries.firstChild)
   }
-
-  // final setup
-
-  gui.open(null) // new buffer
 
   return gui
 }
