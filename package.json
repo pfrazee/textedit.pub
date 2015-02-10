@@ -4,6 +4,11 @@
   "description": "mutli-user text editing",
   "main": "index.js",
   "scripts": {
+    "build-js-home": "mkdir -p js; browserify -o js/home.js src/home.js  --debug",
+    "build-js": "mkdir -p js; npm run build-js-home",
+    "build-css-home": "mkdir -p css; lessc less/home.less css/home.css",
+    "build-css": "mkdir -p css; npm run build-css-home",
+    "build": "npm run build-css; npm run build-js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
