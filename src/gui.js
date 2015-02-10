@@ -45,6 +45,7 @@ module.exports = function (ssb) {
     bufferDisabledCommits = {}
 
     updateNav()
+    try { document.querySelector('button#save').removeAttribute('disabled') } catch (e) {}
 
     if (id)
       readBuffer(bufferId, bufferState, { redraw: true }, next)
@@ -63,6 +64,9 @@ module.exports = function (ssb) {
   gui.save = function () {
     if (!ssbConnected)
       return alert('You must be logged into your ssb feed to save.')
+
+    if (Object.keys(bufferDisabledCommits).length)
+      return console.log('Cannot save when parts of history have been disabled.')
 
     var editorStr = editor.getValue()
     if (editorStr === bufferState.toString() || !editorStr)
@@ -139,21 +143,15 @@ module.exports = function (ssb) {
     }
 
     var key = e.target.value
-    console.log('toggle', key)
     bufferDisabledCommits[key] = !e.target.checked
+    if (!bufferDisabledCommits[key])
+      delete bufferDisabledCommits[key]
 
-    // rebuild
-    var oldState = bufferState
-    bufferState = mview.text()
-    readBuffer(bufferId, bufferState, function (err) {
-      if (err) {
-        alert('Failed to reconstruct the text buffer, check the console for error details.')
-        console.error('Failed to read buffer state', err)
-        bufferState = oldState
-        return
-      }
-      editor.setValue(bufferState.toString())
-    })
+    if (Object.keys(bufferDisabledCommits).length)
+      document.querySelector('button#save').setAttribute('disabled', true)
+    else
+      document.querySelector('button#save').removeAttribute('disabled')
+    rebuildBuffer()
   }
 
   // ssb sync
@@ -185,6 +183,22 @@ module.exports = function (ssb) {
     } catch (e) {
       console.warn('Failed to read text buffer', e)
     }
+  }
+
+  function rebuildBuffer (cb) {
+    var oldState = bufferState
+    bufferState = mview.text()
+    readBuffer(bufferId, bufferState, function (err) {
+      if (err) {
+        alert('Failed to reconstruct the text buffer, check the console for error details.')
+        console.error('Failed to read buffer state', err)
+        bufferState = oldState
+        cb && cb(err)
+        return
+      }
+      editor.setValue(bufferState.toString())
+      cb && cb()
+    })
   }
 
   function readBuffer (id, state, opts, cb) {
