@@ -43,15 +43,7 @@ module.exports = function (ssb) {
     bufferState = mview.text()
     bufferDisabledCommits = {}
 
-    try { document.querySelector('#left .selected').classList.remove('selected') }
-    catch (e) {}
-    try {
-      if (id)
-        document.querySelector('#left [data-id="'+id+'"]').classList.add('selected')
-      else
-        document.querySelector('#left li').classList.add('selected')
-    } catch (e) {}
-    window.location.hash = '#/file/'+id
+    updateNav()
 
     if (id)
       readBuffer(bufferId, bufferState, { redraw: true }, next)
@@ -123,8 +115,9 @@ module.exports = function (ssb) {
             alert('Failed to publish diff, see console for error details')
             return
           }
-          bufferState.update(diff)        
-          gui.open(id)
+          bufferState.update(diff)       
+          bufferId = id
+          updateNav()
           document.querySelector('button#save').classList.remove('changed')
         })
       })
@@ -297,6 +290,17 @@ module.exports = function (ssb) {
       com.histUpdate(update, diff, { ontoggle: gui.toggleCommit.bind(gui) }), 
       histEntries.firstChild
     )
+  }
+
+  function updateNav () {
+    window.location.hash = '#/file/'+bufferId
+    try { document.querySelector('#left .selected').classList.remove('selected') } catch (e) {}
+    try {
+      if (bufferId)
+        document.querySelector('#left [data-id="'+bufferId+'"]').classList.add('selected')
+      else
+        document.querySelector('#left li').classList.add('selected')
+    } catch (e) {}
   }
 
   return gui
