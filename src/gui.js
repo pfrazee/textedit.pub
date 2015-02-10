@@ -12,6 +12,7 @@ require('codemirror/mode/htmlmixed/htmlmixed')
 require('codemirror/keymap/sublime')
 require('codemirror/addon/dialog/dialog')
 var CodeMirror = require('codemirror')
+window.CodeMirror = CodeMirror
 
 module.exports = function (ssb) {
 
@@ -118,6 +119,7 @@ module.exports = function (ssb) {
           bufferState.update(diff)       
           bufferId = id
           updateNav()
+          addToHistoryPane(update, diff)
           document.querySelector('button#save').classList.remove('changed')
         })
       })
@@ -253,7 +255,7 @@ module.exports = function (ssb) {
   document.getElementById('right').appendChild(com.tools({ onsave: gui.save.bind(gui), onhist: gui.toggleHistory.bind(gui) }))
   document.getElementById('left').appendChild(com.files({ onnew: gui.open.bind(gui, null) }))
   document.getElementById('left').appendChild(h('ul#buffers'))
-  var editor = CodeMirror(document.getElementById('main'), {
+  var editor = window.editor = CodeMirror(document.getElementById('main'), {
     lineNumbers: true,
     mode: 'markdown',
     keyMap: 'sublime',
@@ -270,7 +272,9 @@ module.exports = function (ssb) {
       document.querySelector('button#save').classList.remove('changed')
     }
   })
-  window.editor = editor
+  var ctrl = (CodeMirror.keyMap['default'] == CodeMirror.keyMap.macDefault) ? 'Cmd-' : 'Ctrl-'
+  CodeMirror.keyMap.sublime[ctrl+'H'] = gui.toggleHistory.bind(gui)
+  CodeMirror.commands.save = gui.save.bind(gui)
 
   window.onhashchange = openFileInUrl
   function openFileInUrl() {
