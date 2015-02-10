@@ -217,12 +217,16 @@ module.exports = function (ssb) {
       if (err || !updates || !updates.length) return cb(err)
       updates.sort(updateSort)
       applyNextDiff()
+      var missingBlob = false
       var total = updates.length
       var diffSpeed = (Math.max(33 - Math.min(33, updates.length), 0) + 0) * 2
 
       function applyNextDiff () {
-        if (updates.length === 0)
+        if (updates.length === 0) {
+          if (missingBlob)
+            alert('Some edits\' blobs have not yet been received, and thus their changes were not applied. Check the console for details. (Still working on the UI for this.)')
           return cb()
+        }
         
         var update = updates.shift()
         var diff = update.value.content.diff
@@ -238,7 +242,8 @@ module.exports = function (ssb) {
         function getBlob () {
           u.getBlob(ssb, diff.ext, function (err, blob) {
             if (err) {
-              console.error('Failed to fetch update', update, err)
+              console.error('Failed to fetch update blob, id: '+diff.ext, update, err)
+              missingBlob = true
               return applyNextDiff()
             }
             
