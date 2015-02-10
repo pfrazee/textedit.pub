@@ -42,6 +42,17 @@ module.exports = function (ssb) {
     bufferId = id
     bufferState = mview.text()
     bufferDisabledCommits = {}
+
+    try { document.querySelector('#left .selected').classList.remove('selected') }
+    catch (e) {}
+    try {
+      if (id)
+        document.querySelector('#left [data-id="'+id+'"]').classList.add('selected')
+      else
+        document.querySelector('#left li').classList.add('selected')
+    } catch (e) {}
+    window.location.hash = '#/file/'+id
+
     if (id)
       readBuffer(bufferId, bufferState, { redraw: true }, next)
     else {
@@ -53,13 +64,6 @@ module.exports = function (ssb) {
       if (err)
         console.error('Failed to read buffer state', err)
       editor.setValue(bufferState.toString())
-      try { document.querySelector('#left .selected').classList.remove('selected') }
-      catch (e) {}
-      if (id)
-        document.querySelector('#left [data-id="'+id+'"]').classList.add('selected')
-      else
-        document.querySelector('#left li').classList.add('selected')
-      window.location.hash = '#/file/'+id
     }
   }
 
@@ -158,7 +162,7 @@ module.exports = function (ssb) {
     ssbConnected = true
     document.getElementById('buffers').innerHTML = ''
     console.log('reading list')
-    pull(ssb.messagesByType({ type: 'create-text-buffer', live: true }), pull.drain(onNewTextBuffer, function () {
+    pull(ssb.messagesByType({ type: 'create-text-buffer', live: true}), pull.drain(onNewTextBuffer, function () {
       ssbConnected = false
     }))
     gui.open(bufferId || window.location.hash.slice('#/file/'.length) || null)
@@ -175,7 +179,8 @@ module.exports = function (ssb) {
         key: msg.key,
         label: msg.value.content.name,
         created: msg.value.timestamp,
-        onclick: gui.open.bind(gui, msg.key)
+        onclick: gui.open.bind(gui, msg.key),
+        selected: (bufferId == msg.key)
       }), buffers.firstChild)
     } catch (e) {
       console.warn('Failed to read text buffer', e)
@@ -195,6 +200,8 @@ module.exports = function (ssb) {
       if (err || !updates || !updates.length) return cb(err)
       updates.sort(updateSort)
       applyNextDiff()
+      var total = updates.length
+      var diffSpeed = (Math.max(33 - Math.min(33, updates.length), 0) + 0) * 2
 
       function applyNextDiff () {
         if (updates.length === 0)
@@ -232,12 +239,17 @@ module.exports = function (ssb) {
         function apply () {
           try {
             state.update(diff)
-            if (opts.redraw)
+            if (opts.redraw) {
+              document.getElementById('progress-bar').style.height = ((total - updates.length) / total) * 100 + '%'
               addToHistoryPane(update, diff)
+              editor.setValue(state.toString())
+              setTimeout(applyNextDiff, diffSpeed)
+            } else
+              applyNextDiff()            
           } catch (e) {
             console.error('Failed to apply update', update, e)
+            applyNextDiff()            
           }
-          applyNextDiff()
         }
       }
     }))
@@ -281,7 +293,10 @@ module.exports = function (ssb) {
     histEntries.innerHTML = ''
   }
   function addToHistoryPane(update, diff) {
-    histEntries.insertBefore(com.histUpdate(update, diff, { ontoggle: gui.toggleCommit.bind(gui) }), histEntries.firstChild)
+    histEntries.insertBefore(
+      com.histUpdate(update, diff, { ontoggle: gui.toggleCommit.bind(gui) }), 
+      histEntries.firstChild
+    )
   }
 
   return gui
