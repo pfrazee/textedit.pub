@@ -39,6 +39,9 @@ module.exports = function (ssb) {
       if (!confirm('There are unsaved changes to this buffer. Are you sure you want to navigate away?'))
         return
     }
+    
+    if (id == 'null')
+      id = null
 
     bufferId = id
     bufferState = mview.text()

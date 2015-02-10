@@ -5,6 +5,6 @@ var u = require('../util')
 module.exports = function (opts) {
   opts = opts || {}
   return h('ul',
-    file({ label: 'New', onclick: u.handler(opts.onnew) })
+    file({ label: 'New', selected: true, onclick: u.handler(opts.onnew) })
   )
 }
