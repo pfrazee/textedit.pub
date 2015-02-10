@@ -8,9 +8,13 @@ var localhost  = require('ssb-channel').connect(ssb, 'localhost')
 var gui        = require('./gui')(ssb)
 
 var connected = false
-var loginBtn = document.getElementById('login')
+var loginBtns = Array.prototype.slice.call(document.querySelectorAll('.login'))
+var loginPane = document.getElementById('login-pane')
 
-loginBtn.onclick = function () {
+loginBtns.forEach(function (b) {
+  b.onclick = onLoginClick
+})
+function onLoginClick () {
   if (connected) {
     auth.deauth('localhost')
     localhost.close()
@@ -33,8 +37,11 @@ localhost.on('connect', function() {
       if (err) return localhost.close(), console.error('Token auth failed', err)
       gui.sync()
       connected = true
-      loginBtn.innerText = 'Logout'
-      loginBtn.removeAttribute('disabled')
+      loginBtns.forEach(function (b) {
+        b.innerText = 'Logout'
+        b.removeAttribute('disabled')
+      })
+      loginPane.style.display = 'none'
     })
   })
 })
@@ -45,13 +52,18 @@ localhost.on('error', function(err) {
   // app.setStatus('danger', 'Lost connection to the host program. Please restart the host program. Trying again in 10 seconds.')
   // localhost.reconnect()
   connected = false
-  loginBtn.innerText = 'Login'
-  loginBtn.removeAttribute('disabled')
+  loginBtns.forEach(function (b) {
+    b.innerText = 'Login'
+    b.removeAttribute('disabled')
+  })
+  loginPane.style.display = 'block'
 })
 
 localhost.on('reconnecting', function(err) {
   console.log('Attempting Reconnect')
   // app.setStatus('danger', 'Lost connection to the host program. Reconnecting...')
-  loginBtn.innerText = 'Connecting...'
-  loginBtn.setAttribute('disabled', true)
+  loginBtns.forEach(function (b) {
+    b.innerText = 'Connecting...'
+    b.setAttribute('disabled', true)
+  })
 })
