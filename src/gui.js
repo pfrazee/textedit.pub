@@ -133,6 +133,11 @@ module.exports = function (ssb) {
   }
 
   gui.toggleCommit = function (e) {
+    if (gui.hasChanged()) {
+      if (!confirm('There are unsaved changes to this buffer. Toggling commits will lose those changes. Are you sure you want to proceed?'))
+        return e.preventDefault()
+    }
+
     var key = e.target.value
     console.log('toggle', key)
     bufferDisabledCommits[key] = !e.target.checked
