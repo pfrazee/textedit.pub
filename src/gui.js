@@ -217,7 +217,7 @@ module.exports = function (ssb) {
             
             try { diff = JSON.parse(blob) }
             catch (e) {
-              console.error('Failed to parse update blob', update, e, diff)
+              console.error('Failed to parse update blob', update, e, blob)
               return applyNextDiff()
             }
             console.log(diff)
@@ -230,7 +230,7 @@ module.exports = function (ssb) {
           try {
             state.update(diff)
             if (opts.redraw)
-              addToHistoryPane(update)
+              addToHistoryPane(update, diff)
           } catch (e) {
             console.error('Failed to apply update', update, e)
           }
@@ -247,7 +247,7 @@ module.exports = function (ssb) {
   document.getElementById('left').appendChild(h('ul#buffers'))
   var editor = CodeMirror(document.getElementById('main'), {
     lineNumbers: true,
-    mode: null,
+    mode: 'markdown',
     keyMap: 'sublime',
     // autoCloseBrackets: true,
     // matchBrackets: true,
@@ -268,8 +268,8 @@ module.exports = function (ssb) {
   function clearHistoryPane() {
     histEntries.innerHTML = ''
   }
-  function addToHistoryPane(update) {
-    histEntries.insertBefore(com.histUpdate(update, { ontoggle: gui.toggleCommit.bind(gui) }), histEntries.firstChild)
+  function addToHistoryPane(update, diff) {
+    histEntries.insertBefore(com.histUpdate(update, diff, { ontoggle: gui.toggleCommit.bind(gui) }), histEntries.firstChild)
   }
 
   // final setup
