@@ -23,8 +23,9 @@ function onLoginClick () {
       title: 'textedit.pub',
       perms: ['add', 'messagesByType', 'messagesLinkedToMessage']
     }, function(err, granted) {
+      debugger;
       if (granted)
-        localhost.reconnect({ wait: 0 })
+        localhost.reconnect()
     })
   }
 }

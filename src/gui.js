@@ -79,7 +79,7 @@ module.exports = function (ssb) {
     if (!bufferId) {
       // new buffer
       var name = prompt('Name of this text buffer')
-      if (!(''+name).trim())
+      if (!name || !(''+name).trim())
         return
     }
     commitMsg = prompt('Commit message')
@@ -131,6 +131,57 @@ module.exports = function (ssb) {
         })
       })
     }
+  }
+
+  gui.publish = function () {
+    if (!ssbConnected)
+      return alert('You must be logged into your ssb feed to publish.')
+
+    if (!bufferId)
+      return alert('No file committed to publish.')
+
+    var editorStr = editor.getValue()
+    if (!editorStr)
+      return console.log('No doc to publish')
+
+    var filename = prompt('File name')
+    if (!filename || !(''+filename).trim())
+      return
+
+    var publishmsg = prompt('Publish message')
+    if (publishmsg === null)
+      return
+
+    var sourceId = bufferId
+    u.publishTextBlob(ssb, editorStr, function (err, link) {
+      if (err) {
+        console.error(err)
+        alert('Failed to publish file, see console for error details')
+        return
+      }
+      link.name = filename
+      link.rel  = 'attachment'
+      link.type = 'text/plain'
+      ssb.add({
+        type: 'post',
+        text: publishmsg,
+        attachments: [link],
+        source: { rel: 'source', msg: sourceId }
+      }, function (err, update) {
+        if (err) {
+          console.error(err)
+          alert('Failed to publish file, see console for error details')
+          return
+        }
+        var pubbtn = document.querySelector('#publish')
+        pubbtn.innerText = 'Published.'
+        pubbtn.setAttribute('disabled', true)
+        setTimeout(function () {
+          pubbtn.innerText = 'Publish'
+          pubbtn.removeAttribute('disabled')
+        }, 5000)
+      })
+    })
   }
 
   // gui controls
@@ -279,7 +330,11 @@ module.exports = function (ssb) {
 
   // layout
 
-  document.getElementById('right').appendChild(com.tools({ onsave: gui.save.bind(gui), onhist: gui.toggleHistory.bind(gui) }))
+  document.getElementById('right').appendChild(com.tools({
+    onsave: gui.save.bind(gui),
+    onhist: gui.toggleHistory.bind(gui),
+    onpub:  gui.publish.bind(gui)
+  }))
   document.getElementById('left').appendChild(com.files({ onnew: gui.open.bind(gui, null) }))
   document.getElementById('left').appendChild(h('ul#buffers'))
   var editor = window.editor = CodeMirror(document.getElementById('main'), {
@@ -327,10 +382,13 @@ module.exports = function (ssb) {
     window.location.hash = '#/file/'+bufferId
     try { document.querySelector('#left .selected').classList.remove('selected') } catch (e) {}
     try {
-      if (bufferId)
+      if (bufferId) {
         document.querySelector('#left [data-id="'+bufferId+'"]').classList.add('selected')
-      else
+        document.querySelector('button#publish').removeAttribute('disabled')
+      } else {
         document.querySelector('#left li').classList.add('selected')
+        document.querySelector('button#publish').setAttribute('disabled', true)
+      }
     } catch (e) {}
   }
 
