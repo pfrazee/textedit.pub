@@ -174,9 +174,11 @@ module.exports = function (ssb) {
           return
         }
         var pubbtn = document.querySelector('#publish')
+        pubbtn.classList.add('published')
         pubbtn.innerText = 'Published.'
         pubbtn.setAttribute('disabled', true)
         setTimeout(function () {
+          pubbtn.classList.remove('published')
           pubbtn.innerText = 'Publish'
           pubbtn.removeAttribute('disabled')
         }, 5000)
@@ -356,6 +358,7 @@ module.exports = function (ssb) {
   })
   var ctrl = (CodeMirror.keyMap['default'] == CodeMirror.keyMap.macDefault) ? 'Cmd-' : 'Ctrl-'
   CodeMirror.keyMap.sublime[ctrl+'H'] = gui.toggleHistory.bind(gui)
+  CodeMirror.keyMap.sublime[ctrl+'P'] = gui.publish.bind(gui)
   CodeMirror.commands.save = gui.save.bind(gui)
 
   window.onhashchange = openFileInUrl
